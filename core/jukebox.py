@@ -52,11 +52,12 @@ def analyze_audio(music, sr, hop_length=512):
     # timing info for each step (dict, seconds)
     timings = {}
     
-    print("Extracting chroma features")
+    print("Extracting chroma + MFCC features")
     t0 = time.perf_counter()
     chroma = librosa.feature.chroma_cqt(y=music, sr=sr, hop_length=hop_length)
+    mfcc = librosa.feature.mfcc(y=music, sr=sr, hop_length=hop_length, n_mfcc=20)
     timings['chroma'] = time.perf_counter() - t0
-    
+
     print("Beat tracking")
     t0 = time.perf_counter()
     beats = beat_track(music, sr, hop_length)
@@ -69,12 +70,14 @@ def analyze_audio(music, sr, hop_length=512):
     doubled.append(beats[-1])
     beats = np.array(doubled)
     timings['beat_track'] = time.perf_counter() - t0
-    
+
     print(f"Found {len(beats)} beats (doubled)")
-    
+
     print("Computing beat-sync features")
     t0 = time.perf_counter()
-    beat_synced_features = beat_sync_features(chroma, beats, aggregator=np.median)
+    beat_synced_chroma = beat_sync_features(chroma, beats, aggregator=np.median)
+    beat_synced_mfcc   = beat_sync_features(mfcc,   beats, aggregator=np.median)
+    beat_synced_features = np.vstack([beat_synced_chroma, beat_synced_mfcc])  # (32, N)
     timings['beat_sync'] = time.perf_counter() - t0
     
     print("Computing similarity matrix")
@@ -100,7 +103,7 @@ def analyze_audio(music, sr, hop_length=512):
     print(f"Chunk extraction: {timings['chunks']*1000}ms")
     print(f"Total analysis: {sum(timings.values())*1000}ms\n")
     
-    return beat_chunks, D, timings
+    return beat_chunks, D, beat_synced_features, timings
 
 def find_most_similar_beat(D, current_beat):
     distances = D[current_beat].copy()
@@ -235,7 +238,7 @@ def main():
     load_time = time.perf_counter() - t0
     print(f"Loaded {len(music) / sr:.1f}s of audio at {sr}Hz ({load_time*1000:.1f}ms)")
     
-    beat_chunks, D, _ = analyze_audio(music, sr, hop_length=args.hop)
+    beat_chunks, D, _, _ = analyze_audio(music, sr, hop_length=args.hop)
     
     stream_jukebox(beat_chunks, D, sr)
 

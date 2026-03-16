@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS352 Final Project</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1 id="project-title">Hands Off</h1>
+        <div class="header-flex">
+            <div class="members">
+                <h2>Project Members</h2>
+                <p><strong>Alex Anca</strong></p>
+            </div>
+            <div class="contact">
+                <h2>Contact</h2>
+                <p><a href="mailto:alexanca2027@u.northwestern.edu">alexanca2027@u.northwestern.edu</a></p>
+            </div>
+            <div class="course-info">
+                <h2>Course</h2>
+                <p>EECS 352: Machine Perception of Music & Audio<br>Northwestern University<br>Prof. Bryan Pardo</p>
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="synopsis">
+            <h2>Project Synopsis</h2>
+            <h3>Motivation</h3>
+            <p>
+                Inspired by Imogen Heap's MiMU gloves, Hands Off makes expressive music performance accessible with no hardware beyond a laptop and webcam. Anyone can manipulate a live music stream in real time using only their hands.
+            </p>
+            <h3>Overview</h3>
+            <p>
+                Hands Off is a gesture-controlled Infinite Jukebox. A song is analyzed into beats, clustered by harmonic and timbral similarity, and played back in a continuous stream. Hand gestures detected via MediaPipe reshape that stream live:
+            </p>
+            <ul class="gesture-list">
+                <li><strong>Left fist</strong>: loop the current beat</li>
+                <li><strong>Right fist</strong>: eighth-note stutter</li>
+                <li><strong>Left pinch + rotate</strong>: sweep a low-pass filter</li>
+                <li><strong>Right pinch + rotate</strong>: control cluster-jump tightness</li>
+                <li><strong>1–4 fingers (hold 2s)</strong>: select which beat cluster to stay in</li>
+            </ul>
+            <h3>Technical Approach</h3>
+            <p>
+                Audio is analyzed with librosa: chroma and MFCC features are extracted per beat, then clustered with Ward clustering. Beats are projected to 2D via PCA for a live scatter-plot display. The audio callback streams beat chunks with crossfade-on-jump and a continuously-swept Butterworth IIR low-pass filter. Gesture smoothing uses a 4-frame rolling mode buffer to suppress transient noise.
+            </p>
+            <h3>Related Work</h3>
+            <ul class="related-work">
+                <li><a href="https://mimugloves.com/gloves/" target="_blank">MiMU Gloves</a>: Commercial wearable gloves for musical gesture control.</li>
+                <li><a href="https://vibeplay.app/" target="_blank">VibePlay</a>: Hand-tracking music control app.</li>
+                <li><a href="https://github.com/CodeNBucket/Music-With-Hand-Gestures" target="_blank">Music With Hand Gestures</a>: Open-source playlist control via hand gestures.</li>
+                <li><a href="https://www.algoriddim.com/gesturecontrol" target="_blank">Algoriddim Gesture Control</a>: Gesture-controlled DJ software.</li>
+            </ul>
+        </section>
+        <section class="media">
+            <h2>Demo</h2>
+            <div class="image-placeholder">
+                <p><em>Video coming soon</em></p>
+            </div>
+        </section>
+    </main>
+    <footer>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

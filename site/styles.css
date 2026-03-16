@@ -1,0 +1,143 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f8f9fa;
+    color: #222;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #2d3e50;
+    color: #fff;
+    padding: 2.5rem 1rem 1.5rem 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+#project-title {
+    font-size: 2.8rem;
+    margin-bottom: 1.2rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.header-flex {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-top: 1.2rem;
+}
+
+.members, .contact, .course-info {
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    min-width: 220px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    margin: 0.5rem 0;
+    text-align: left;
+}
+
+.members p, .contact p, .course-info p {
+    margin: 0.5rem 0 0 0;
+    font-size: 1.1rem;
+}
+
+.contact p > a {
+    color: white;
+    text-decoration: none;
+}
+
+.netid {
+    font-size: 0.95em;
+    color: #b8e0ff;
+    margin-left: 0.5em;
+}
+
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 2rem;
+}
+
+
+.synopsis h2, .media h2, .audio h2, .testing h2 {
+    color: #2d3e50;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.3rem;
+    margin-top: 2.2rem;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.5px;
+}
+
+.synopsis h3 {
+    margin-top: 1.5rem;
+    color: #3a4a5d;
+    font-size: 1.18rem;
+}
+
+.synopsis p {
+    margin: 0.7rem 0 0.7rem 0;
+    line-height: 1.7;
+    font-size: 1.08rem;
+}
+
+.gesture-list {
+    margin: 0.8rem 0 0.8rem 1.2rem;
+    padding-left: 0;
+    line-height: 1.9;
+    font-size: 1.05rem;
+}
+
+.related-work {
+    margin-top: 1.2rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.2rem;
+}
+.related-work li {
+    margin-bottom: 0.4rem;
+    font-size: 1.05rem;
+}
+.related-work a {
+    color: #2d7be0;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+.related-work a:hover {
+    color: #1a4a8a;
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 250px;
+    background: repeating-linear-gradient(135deg, #e0e0e0, #e0e0e0 20px, #f8f9fa 20px, #f8f9fa 40px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.caption {
+.related-work a {
+    color: inherit;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+.related-work a:hover {
+    color: #444;
+}
+    margin: 1rem auto;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background: transparent;
+    margin-top: 2rem;
+    /* border-radius removed for squared corners */
+}

@@ -31,12 +31,17 @@ def is_open_palm(lm):
 def is_fist(lm):
     wrist = lm[0]
     return all([
-        dist(lm[4], lm[5]) < dist(lm[3], lm[5]), # thumb curled
         dist(lm[8], wrist)  < dist(lm[6], wrist), # index curled
         dist(lm[12], wrist) < dist(lm[10], wrist), # middle curled
         dist(lm[16], wrist) < dist(lm[14], wrist), # ring curled
         dist(lm[20], wrist) < dist(lm[18], wrist), # pinky curled
     ])
+
+def count_extended_fingers(lm):
+    """Return number of extended fingers (0-4, thumb excluded)."""
+    wrist = lm[0]
+    checks = [(8, 6), (12, 10), (16, 14), (20, 18)]
+    return sum(dist(lm[tip], wrist) > dist(lm[pip], wrist) for tip, pip in checks)
 
 def is_pinch(lm):
     # thumb tip to index tip distance relative to hand size
