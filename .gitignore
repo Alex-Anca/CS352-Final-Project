@@ -5,3 +5,4 @@ venv/
 .env
 /output/
 /archive/
+jester_dataset/
