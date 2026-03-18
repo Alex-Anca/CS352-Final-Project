@@ -20,8 +20,8 @@ class JukeboxState:
 
 def beat_track(music, sr, hop_length):
     # get beat frames using librosa's beat tracker
-    _, beats = librosa.beat.beat_track(y=music, sr=sr, hop_length=hop_length)
-    return beats
+    tempo, beats = librosa.beat.beat_track(y=music, sr=sr, hop_length=hop_length)
+    return float(np.asarray(tempo).flat[0]), beats
 
 def beat_sync_features(feature_vectors, beats, aggregator=np.median):
     # grab the beat sync features by aggregating chroma features within each beat segment
@@ -60,7 +60,7 @@ def analyze_audio(music, sr, hop_length=512):
 
     print("Beat tracking")
     t0 = time.perf_counter()
-    beats = beat_track(music, sr, hop_length)
+    tempo, beats = beat_track(music, sr, hop_length)
     beats = np.append(beats, chroma.shape[1])
     # double the beats by adding midpoints (for now, this is how eight notes are implemented)
     doubled = []
@@ -103,7 +103,7 @@ def analyze_audio(music, sr, hop_length=512):
     print(f"Chunk extraction: {timings['chunks']*1000}ms")
     print(f"Total analysis: {sum(timings.values())*1000}ms\n")
     
-    return beat_chunks, D, beat_synced_features, timings
+    return beat_chunks, D, beat_synced_features, timings, float(tempo)
 
 def find_most_similar_beat(D, current_beat):
     distances = D[current_beat].copy()

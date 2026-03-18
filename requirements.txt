@@ -7,3 +7,4 @@ scipy>=1.10.0
 scikit-learn>=1.2.0
 sounddevice>=0.4.0
 pynput>=1.7.0
+pedalboard>=0.7.0

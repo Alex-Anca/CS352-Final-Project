@@ -30,7 +30,7 @@ from core.state import SharedState
 from vision.gesture import run_gesture_thread
 from vision.display import draw_frame
 from audio.player import run_audio_stream
-from viz.cluster import build_cluster_data, ClusterRenderer
+from viz.timeline import TimelineRenderer
 
 
 def parse_args():
@@ -39,8 +39,6 @@ def parse_args():
     parser.add_argument("--hop", type=int, default=512,
                         help="Hop length for analysis (default: 512)")
     parser.add_argument("--seed", type=int, help="Random seed for reproducibility")
-    parser.add_argument("--k", type=int, default=4,
-                        help="Number of beat clusters (default: 4)")
     return parser.parse_args()
 
 
@@ -55,26 +53,22 @@ def main():
     music, sr = librosa.load(args.audio_file)
     print(f"Loaded {len(music) / sr:.1f}s of audio at {sr}Hz ({(time.perf_counter()-t0)*1000:.1f}ms)")
 
-    beat_chunks, D, beat_synced_features, _ = analyze_audio(music, sr, hop_length=args.hop)
+    beat_chunks, D, beat_synced_features, _, bpm = analyze_audio(music, sr, hop_length=args.hop)
 
-    cluster_labels, pca_coords, k_colors = build_cluster_data(beat_synced_features, k=args.k)
     beat_chunk_lengths = [len(c) for c in beat_chunks]
-    # cluster panel is square, same height as camera (determined after first frame)
-    # use a fixed size here; main loop will lazy-reinit if camera size differs
-    renderer = ClusterRenderer(pca_coords, cluster_labels, k_colors, beat_chunk_lengths,
-                               canvas_size=(480, 480))
+    renderer = TimelineRenderer(len(beat_chunks), D, beat_chunk_lengths, canvas_size=(720, 720))
 
     state = SharedState()
-    state.cluster_labels = cluster_labels
-    state.pca_coords = pca_coords
 
     print("\n=== Gesture Controls ===")
-    print(" Left fist   (hold)  : Loop current beat")
-    print(" Left pinch  (hold)  : Rotate hand to adjust LPF cutoff (shown as LPF %)")
-    print(" Right fist  (hold)  : Eighth-note stutter")
-    print(" Right pinch (hold)  : Rotate hand to adjust tightness (shown as Tight %)")
-    print(" Q                   : Quit")
-    print(" Ctrl+C              : Quit\n")
+    print(f" BPM detected: {bpm:.1f}")
+    print(" LEFT hand forward/back  : reverb depth (closer = sound source farther back)")
+    print(" LEFT hand finger spread : reverb tail  (open = big room, fist = small room)")
+    print(" RIGHT hand fingers      : delay subdivision  1=1/4  2=1/8  3=3/8  4=1/16")
+    print(" RIGHT hand forward/back : delay feedback (closer = more repeats)")
+    print(" RIGHT fist / open palm  : delay off")
+    print(" BOTH hands pinch        : TENSION  (far apart = sequential, close = jump often)")
+    print(" Q / Ctrl+C              : Quit\n")
 
     def on_press(key):
         if hasattr(key, 'char') and key.char == 'q':
@@ -87,7 +81,9 @@ def main():
     gesture_t = threading.Thread(target=run_gesture_thread, args=(state,))
     gesture_t.start()
 
-    audio_t = threading.Thread(target=run_audio_stream, args=(beat_chunks, D, cluster_labels, sr, state))
+    audio_t = threading.Thread(target=run_audio_stream,
+                               args=(beat_chunks, D, None, sr, state),
+                               kwargs={"bpm": bpm})
     audio_t.start()
 
     # Display loop runs on the main thread - required by Qt/OpenCV
@@ -100,6 +96,7 @@ def main():
                 draw_frame(display, result, state)
 
                 canvas = renderer.render(state)
+                display = cv2.resize(display, (960, 720), interpolation=cv2.INTER_LINEAR)
                 combined = np.hstack([display, canvas])
                 cv2.imshow('Gesture Jukebox', combined)
             if cv2.waitKey(1) & 0xFF == ord('q'):

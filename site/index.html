@@ -9,6 +9,7 @@
 <body>
     <header>
         <h1 id="project-title">Hands Off</h1>
+        <p class="subtitle">A gesture-controlled spatial music instrument</p>
         <div class="header-flex">
             <div class="members">
                 <h2>Project Members</h2>
@@ -20,7 +21,7 @@
             </div>
             <div class="course-info">
                 <h2>Course</h2>
-                <p>EECS 352: Machine Perception of Music & Audio<br>Northwestern University<br>Prof. Bryan Pardo</p>
+                <p>EECS 352: Machine Perception of Music &amp; Audio<br>Northwestern University<br>Prof. Bryan Pardo</p>
             </div>
         </div>
     </header>
@@ -29,36 +30,100 @@
             <h2>Project Synopsis</h2>
             <h3>Motivation</h3>
             <p>
-                Inspired by Imogen Heap's MiMU gloves, Hands Off makes expressive music performance accessible with no hardware beyond a laptop and webcam. Anyone can manipulate a live music stream in real time using only their hands.
+                Primarily inspired by Imogen Heap's MiMU gloves, Hands Off turns a laptop and webcam into a hands-free music instrument. Instead of having to learn an instrument or musical notation, anyone can load a favorite song and make it their own.
             </p>
+
             <h3>Overview</h3>
             <p>
-                Hands Off is a gesture-controlled Infinite Jukebox. A song is analyzed into beats, clustered by harmonic and timbral similarity, and played back in a continuous stream. Hand gestures detected via MediaPipe reshape that stream live:
+                Hands Off is a gesture-controlled Infinite Jukebox. A song is cut into beats that play back in a continuous stream. Your two hands each control a different aspect of sound in real time:
             </p>
-            <ul class="gesture-list">
-                <li><strong>Left fist</strong>: loop the current beat</li>
-                <li><strong>Right fist</strong>: eighth-note stutter</li>
-                <li><strong>Left pinch + rotate</strong>: sweep a low-pass filter</li>
-                <li><strong>Right pinch + rotate</strong>: control cluster-jump tightness</li>
-                <li><strong>1–4 fingers (hold 2s)</strong>: select which beat cluster to stay in</li>
-            </ul>
+
+            <div class="hands-grid">
+                <div class="hand-card left-hand">
+                    <div class="hand-label">SPACE (Left Hand)</div>
+                    <ul class="gesture-list">
+                        <li><strong>Move hand toward / away from camera</strong>: reverb depth, how close the music is in the room</li>
+                        <li><strong>Open palm</strong>: longer reverb tail (bigger room)</li>
+                        <li><strong>Close into fist</strong>: shorter reverb tail (smaller room)</li>
+                    </ul>
+                </div>
+                <div class="hand-card right-hand">
+                    <div class="hand-label">TIME (Right Hand)</div>
+                    <ul class="gesture-list">
+                        <li><strong>1 finger</strong>: quarter-note delay</li>
+                        <li><strong>2 fingers</strong>: eighth-note delay</li>
+                        <li><strong>3 fingers</strong>: dotted-eighth delay</li>
+                        <li><strong>4 fingers</strong>: sixteenth-note delay</li>
+                        <li><strong>Fist</strong>: delay off + loops current beat</li>
+                        <li><strong>Move hand toward / away from camera</strong>: delay feedback amount</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tension-card">
+                <div class="hand-label">TENSION (Both Hands)</div>
+                <p>
+                    When both hands make a pinch gesture, they act like an elastic band.
+                    Stretch your hands far apart and the song plays sequentially, beat by beat.
+                    Bring them close together and the jukebox starts jumping to similar-sounding beats, creating loops and variations.
+                </p>
+            </div>
+
+            <figure class="diagram">
+                <img src="../media/Hands Off Control Structure.png" alt="Hands Off control structure diagram">
+                <p class="video-caption">Control Structure Diagram.</p>  
+            </figure>
+
             <h3>Technical Approach</h3>
             <p>
-                Audio is analyzed with librosa: chroma and MFCC features are extracted per beat, then clustered with Ward clustering. Beats are projected to 2D via PCA for a live scatter-plot display. The audio callback streams beat chunks with crossfade-on-jump and a continuously-swept Butterworth IIR low-pass filter. Gesture smoothing uses a 4-frame rolling mode buffer to suppress transient noise.
+                A song is loaded with librosa and sliced into beats. Each beat's chroma and MFCC features are extracted and stored in a cosine similarity matrix, which captures how harmonically and timbrally alike any two beats are. This matrix drives both beat-jump decisions and the circular timeline visualization, where arcs connect beats that are likely to jump to each other.
             </p>
+            <p>
+                During playback, hand landmarks are detected in real time by MediaPipe's HandLandmarker. Gesture labels are smoothed over a 4-frame rolling majority buffer to suppress noise; the delay subdivision uses a stricter 8-frame buffer with a 5-vote consensus before committing.
+            </p>
+            <p>
+                Two continuous parameters are derived from each hand's geometry: the 2D distance between wrist and middle knuckle estimates how close the hand is to the camera, and the number of extended fingers is counted by comparing each fingertip's distance from the wrist against its middle joint's distance. These drive reverb and delay parameters in an audio effects chain built with Spotify's Pedalboard library, running inside the sounddevice audio callback.
+            </p>
+            <p>
+                The beat-jump probability is controlled by the inter-hand distance when both hands are pinching. Close together maps to a high probability of jumping to the most similar beat (by cosine distance). Far apart forces sequential playback. An EMA smoother prevents abrupt transitions.
+            </p>
+
+            <h3>Reflection</h3>
+            <p>
+                I initially designed this project with a "tightness" knob controlling the infinite jukebox behavior. After reading <em>Musical Instruments in the 21st Century</em> I realized that this method of interaction functioned more like a sensor rather than an instrument. The main argument in the text emphasizes that an instrument is not defined by what it is, but how it is used and perceived. If I wanted <em>Hands Off</em> to behave like an instrument, it would have to be more interactive and fluid, loose rather than static.
+            </p>
+            <p>
+                Intention, gesture, skill: these are the principles of human performance that "Musical Instruments" highlights. I wanted all these principles to appear in some form in my project, and they do: by mapping different gestures to different hands, new sounds can emerge through coordination and practice. <em>Hands Off</em> becomes an instrument through causality and control.
+            </p>
+            <p>
+                I also learned through the Wekinator paper that sometimes the best evaluation is not just an accuracy metric, but "does it feel good to play?" Having my friends test the system supports this idea. Among all controls, the spatial mapping was consistently the most intuitive and engaging. Being able to push a sound farther back into a room is easily conceptualized and beginner friendly, allowing even non-musicians to access expressive nuance.
+            </p>
+
+            <h3>Testing</h3>
+            <p>
+                Gesture detection is validated against the <a href="https://20bn.com/datasets/jester" target="_blank">Jester dataset</a>, a collection of short webcam videos spanning 27 hand gesture categories. For each relevant label, 25 clips are randomly sampled and MediaPipe's HandLandmarker is run on 5 middle frames per clip, producing roughly 100–120 real detected landmark sets per label. Gesture classifier functions (<code>is_open_palm</code>, <code>is_fist</code>, <code>count_extended_fingers</code>, <code>is_pinch</code>) are then checked against that aggregate pool.
+            </p>
+            <p>
+                21 tests cover positive cases (gesture should fire) and negative cases (gesture should not fire) for each function. This statistical approach catches false negatives and false positives across a representative slice of the dataset rather than relying on a single cherry-picked clip. All tests pass in ~30 seconds. Thresholds are conservative because Jester frames are small (100×176 px) and not always captured from ideal angles.
+            </p>
+
             <h3>Related Work</h3>
             <ul class="related-work">
-                <li><a href="https://mimugloves.com/gloves/" target="_blank">MiMU Gloves</a>: Commercial wearable gloves for musical gesture control.</li>
+                <li><a href="https://mimugloves.com/gloves/" target="_blank">MiMU Gloves</a>: Wearable gloves for live musical gesture control, used by Imogen Heap.</li>
+                <li><a href="https://eternalbox.floriegl.tech/jukebox_index.html" target="_blank">Eternal Jukebox</a> by floriegl: Circular beat timeline visualization that inspired the timeline display in Hands Off.</li>
                 <li><a href="https://vibeplay.app/" target="_blank">VibePlay</a>: Hand-tracking music control app.</li>
                 <li><a href="https://github.com/CodeNBucket/Music-With-Hand-Gestures" target="_blank">Music With Hand Gestures</a>: Open-source playlist control via hand gestures.</li>
                 <li><a href="https://www.algoriddim.com/gesturecontrol" target="_blank">Algoriddim Gesture Control</a>: Gesture-controlled DJ software.</li>
             </ul>
         </section>
+
         <section class="media">
             <h2>Demo</h2>
-            <div class="image-placeholder">
-                <p><em>Video coming soon</em></p>
-            </div>
+            <video controls width="100%">
+                <source src="../media/Final Project 335.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p class="video-caption">Live performance with Hands Off.<br><span class="song-credit">Song: "Bees" by Animal Collective</span></p>
         </section>
     </main>
     <footer>
