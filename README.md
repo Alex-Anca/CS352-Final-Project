@@ -103,3 +103,11 @@ mkdir -p models
 curl -L -o models/hand_landmarker.task \
   https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
 ```
+
+---
+
+## Sources
+
+Fiebrink, Rebecca, and Perry Cook. "The Wekinator: A System for Real-time, Interactive Machine Learning in Music." In *Proceedings of the Eleventh International Society for Music Information Retrieval Conference (ISMIR 2010)*, 2010.
+
+*Musical Instruments in the 21st Century: Identities, Configurations, Practices.* Singapore: Springer Nature Singapore, 2018.
